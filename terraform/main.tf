@@ -1,12 +1,12 @@
 resource "google_bigquery_dataset" "twitter" {
-  dataset_id                  = "twitter_dataset"
+  dataset_id                  = "twitter"
   friendly_name               = "Tweet Analysis Dataset"
   description                 = "Dataset for Analysis of trending keywords in Tweets"
   location                    = "EU"
   default_table_expiration_ms = 1209600000 # let's clean up everything after two weeks
   delete_contents_on_destroy  = true
   labels = {
-    env = "PoC"
+    env = "poc"
   }
 }
 
@@ -20,7 +20,7 @@ resource "google_bigquery_table" "tweets" {
   }
 
   labels = {
-    env = "PoC"
+    env = "poc"
   }
 
   schema = <<EOF
