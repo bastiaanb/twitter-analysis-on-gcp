@@ -5,6 +5,7 @@ import json
 import apache_beam as beam
 from apache_beam.io import ReadFromText
 from apache_beam.io import WriteToText
+from apache_beam.io.gcp.bigquery import WriteToBigQuery
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 
@@ -43,8 +44,9 @@ def run(argv=None, save_main_session=True):
             | 'Read' >> ReadFromText(known_args.input)
             | 'FromJSON' >> beam.Map(json.loads)
             | 'Transform' >> beam.Map(transform_tweet_to_bq)
-            | 'ToJSON' >> beam.Map(json.dumps)
-            | 'Write' >> WriteToText(known_args.output)
+#            | 'ToJSON' >> beam.Map(json.dumps)
+#            | 'Write' >> WriteToText(known_args.output)
+            | 'LoadBigQuery' >> WriteToBigQuery('twitter.tweets', method=WriteToBigQuery.Method.FILE_LOADS)
         )
 
 if __name__ == '__main__':
