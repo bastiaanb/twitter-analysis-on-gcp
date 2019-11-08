@@ -1,3 +1,10 @@
+data "google_project" "project" {}
+
+resource "google_project_iam_member" "permissions" {
+  role = "roles/iam.serviceAccountShortTermTokenMinter"
+  member = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-bigquerydatatransfer.iam.gserviceaccount.com"
+}
+
 resource "google_bigquery_dataset" "twitter" {
   dataset_id                  = "twitter"
   friendly_name               = "Tweet Analysis Dataset"
@@ -8,6 +15,8 @@ resource "google_bigquery_dataset" "twitter" {
   labels = {
     env = "poc"
   }
+
+  depends_on = [google_project_iam_member.permissions]
 }
 
 resource "google_bigquery_table" "tweets" {
@@ -59,4 +68,56 @@ resource "google_bigquery_table" "tweets" {
     }
 ]
 EOF
+}
+
+resource "google_bigquery_table" "trends" {
+  dataset_id = "${google_bigquery_dataset.twitter.dataset_id}"
+  table_id   = "trends"
+
+  time_partitioning {
+    type = "DAY"
+#    expiration_ms = 259200000    # expire after 3 days
+  }
+
+  labels = {
+    env = "poc"
+  }
+
+  schema = <<EOF
+[
+    {
+        "name": "time",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "keyword",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "occurrences",
+        "type": "INTEGER",
+        "mode": "REQUIRED"
+    }
+]
+EOF
+}
+
+resource "google_bigquery_data_transfer_config" "default" {
+  display_name                = "tweet trends"
+  location                    = "EU"
+  data_refresh_window_days    = 0
+  data_source_id              = "scheduled_query"
+  schedule                    = "every 1 hours"
+  destination_dataset_id      = "${google_bigquery_dataset.twitter.dataset_id}"
+  params                      = {
+    destination_table_name_template = "trends"
+    write_disposition = "WRITE_APPEND"
+    query = <<EOF
+select CURRENT_TIMESTAMP() as time, keyword, count(*) as occurrences from twitter.tweets, unnest(keywords) as keyword group by keyword order by occurrences desc limit 10;
+EOF
+  }
+
+  depends_on = [google_project_iam_member.permissions]
 }
