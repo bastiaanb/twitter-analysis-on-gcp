@@ -21,7 +21,7 @@ resource "google_cloudfunctions_function" "jsonfeed" {
   name                  = "twitter-trends"
   description           = "Trending Twitter Topics"
   runtime               = "python37"
-  region                = "us-central1"
+  region                = "europe-west1"
 
   available_memory_mb   = 256
   source_archive_bucket = "${google_storage_bucket.deployment.name}"
