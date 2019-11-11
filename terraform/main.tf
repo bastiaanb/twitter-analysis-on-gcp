@@ -65,6 +65,19 @@ resource "google_bigquery_table" "tweets" {
         "name": "keywords",
         "type": "STRING",
         "mode": "REPEATED"
+    },
+    {
+        "name": "place_name",
+        "type": "STRING"
+    },
+    {
+        "name": "place_country",
+        "type": "STRING"
+    },
+    {
+        "name": "hashtags",
+        "type": "STRING",
+        "mode": "REPEATED"
     }
 ]
 EOF
