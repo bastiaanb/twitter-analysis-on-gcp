@@ -128,7 +128,15 @@ resource "google_bigquery_data_transfer_config" "default" {
     destination_table_name_template = "trends"
     write_disposition = "WRITE_APPEND"
     query = <<EOF
-select CURRENT_TIMESTAMP() as time, keyword, count(*) as occurrences from twitter.tweets, unnest(keywords) as keyword group by keyword order by occurrences desc limit 10;
+SELECT
+    CURRENT_TIMESTAMP() AS time,
+    keyword, COUNT(*) AS occurrences
+FROM
+    ${google_bigquery_table.tweets.dataset_id}.${google_bigquery_table.tweets.table_id},
+    UNNEST(keywords) AS keyword
+GROUP BY keyword
+ORDER BY occurrences DESC
+LIMIT 10;
 EOF
   }
 
