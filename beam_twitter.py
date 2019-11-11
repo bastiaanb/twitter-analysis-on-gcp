@@ -1,6 +1,7 @@
 import argparse
 import logging
 import json
+import re
 
 import apache_beam as beam
 from apache_beam.io import ReadFromText
@@ -32,7 +33,7 @@ def run(argv=None, save_main_session=True):
             'place_id': d.get('geo', {}).get('place_id', ''),
             'lang': d.get('lang', ''),
             'text': d['text'],
-            'keywords': hashtags
+            'keywords': re.findall(r'[@#\w\']{4,}', d['text'], re.UNICODE)
         }
 
     # We use the save_main_session option because one or more DoFn's in this
