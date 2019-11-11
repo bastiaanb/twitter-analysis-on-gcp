@@ -6,7 +6,7 @@ resource "google_project_iam_member" "permissions" {
 }
 
 resource "google_bigquery_dataset" "twitter" {
-  dataset_id                  = "twitter"
+  dataset_id                  = "twitter${var.suffix}"
   friendly_name               = "Tweet Analysis Dataset"
   description                 = "Dataset for Analysis of trending keywords in Tweets"
   location                    = "EU"
@@ -105,7 +105,7 @@ EOF
 }
 
 resource "google_bigquery_data_transfer_config" "default" {
-  display_name                = "tweet trends"
+  display_name                = "tweet trends${var.suffix}"
   location                    = "EU"
   data_refresh_window_days    = 0
   data_source_id              = "scheduled_query"

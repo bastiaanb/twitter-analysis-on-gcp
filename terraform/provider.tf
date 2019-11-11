@@ -4,6 +4,6 @@
 provider "google" {
   version = "~> 2.19"
   credentials = "${file("account.json")}"
-  project = "global-datacenter"
+  project = var.project
   region = "eu-west1"
 }
