@@ -1,12 +1,13 @@
 import json
 import flask
+import os
 from google.cloud import bigquery
+
+TRENDS_TABLE = os.environ.get("TRENDS_TABLE", "twitter.trends")
 
 def query_trends(request):
     client = bigquery.Client()
-    query_job = client.query("""
-        SELECT keyword, occurrences FROM twitter.trends ORDER BY time DESC, occurrences DESC LIMIT 10
-    """)
+    query_job = client.query(f"SELECT keyword, occurrences FROM {TRENDS_TABLE} ORDER BY time DESC, occurrences DESC LIMIT 10")
 
     results = query_job.result()  # Waits for job to complete.
     items = [ {

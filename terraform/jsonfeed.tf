@@ -12,9 +12,9 @@ resource "google_storage_bucket" "deployment" {
 
 # place the zip-ed code in the bucket
 resource "google_storage_bucket_object" "jsonfeed-zip" {
-  name   = "jsonfeed.zip"
+  name   = "jsonfeed-${data.archive_file.jsonfeed-zip.output_base64sha256}.zip"
   bucket = "${google_storage_bucket.deployment.name}"
-  source = "${path.root}/jsonfeed.zip"
+  source = "${data.archive_file.jsonfeed-zip.output_path}"
 }
 
 resource "google_cloudfunctions_function" "jsonfeed" {
@@ -29,6 +29,10 @@ resource "google_cloudfunctions_function" "jsonfeed" {
   trigger_http          = true
   timeout               = 60
   entry_point           = "query_trends"
+  environment_variables = {
+    TRENDS_TABLE = "${google_bigquery_table.trends.dataset_id}.${google_bigquery_table.trends.table_id}"
+  }
+
   labels = {
     env = "poc"
   }
