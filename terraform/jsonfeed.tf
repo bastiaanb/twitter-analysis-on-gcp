@@ -7,7 +7,7 @@ data "archive_file" "jsonfeed-zip" {
 
 # create the storage bucket
 resource "google_storage_bucket" "deployment" {
-  name   = "global-datacenter-deployment"
+  name   = "global-datacenter-deployment${var.suffix}"
 }
 
 # place the zip-ed code in the bucket
@@ -18,10 +18,10 @@ resource "google_storage_bucket_object" "jsonfeed-zip" {
 }
 
 resource "google_cloudfunctions_function" "jsonfeed" {
-  name                  = "twitter-trends"
-  description           = "Trending Twitter Topics"
+  name                  = "twitter-trends${var.suffix}"
+  description           = "Trending Twitter Topics${var.suffix}"
   runtime               = "python37"
-  region                = "europe-west1"
+  region                = "${var.region}"
 
   available_memory_mb   = 256
   source_archive_bucket = "${google_storage_bucket.deployment.name}"
