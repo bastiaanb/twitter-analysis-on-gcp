@@ -37,3 +37,7 @@ resource "google_cloudfunctions_function" "jsonfeed" {
     env = "poc"
   }
 }
+
+output "jsonfeed_url" {
+  value = "${google_cloudfunctions_function.jsonfeed.https_trigger_url}"
+}
