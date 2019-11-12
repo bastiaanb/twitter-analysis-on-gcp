@@ -4,7 +4,9 @@ import os
 import requests
 import time
 
-stream_url = "https://api.twitter.com/labs/1/tweets/stream/filter?tweet.format=detailed&user.format=compact&place.format=detailed&expansions=geo.place_id"
+filter_stream_url = "https://api.twitter.com/labs/1/tweets/stream/filter?tweet.format=detailed&user.format=compact&place.format=detailed&expansions=geo.place_id"
+sample_stream_url = "https://api.twitter.com/labs/1/tweets/stream/sample?tweet.format=detailed&user.format=compact&place.format=detailed&expansions=geo.place_id"
+
 rules_url = "https://api.twitter.com/labs/1/tweets/stream/filter/rules"
 
 class BearerTokenAuth(requests.auth.AuthBase):
@@ -58,10 +60,10 @@ def add_rules(rules, auth):
   if response.status_code is not 201:
     raise Exception(f"Cannot create rules (HTTP {response.status_code}): {response.text}")
 
-def stream_connect(auth):
+def stream_connect(url, auth):
   starttime = 0
   file = None
-  response = requests.get(stream_url, auth=auth, stream=True)
+  response = requests.get(url, auth=auth, stream=True)
   if response.status_code is not 200:
     raise Exception(f"Cannot get stream (HTTP {response.status_code}): {response.text}")
 
@@ -87,7 +89,9 @@ def setup_rules(auth):
   ], auth)
 
 auth = BearerTokenAuth(os.environ.get("BEARER_TOKEN"))
+
 setup_rules(auth)
+
 while True:
-    stream_connect(auth)
+    stream_connect(filter_stream_url, auth)
     time.sleep(2)
