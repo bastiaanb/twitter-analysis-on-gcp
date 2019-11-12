@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import logging
 import json
@@ -12,8 +14,9 @@ from apache_beam.options.pipeline_options import SetupOptions
 
 def run(argv=None, save_main_session=True):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', dest='input', default='/tmp/beam/input', help='Input file to process.')
-    parser.add_argument('--output', dest='output', default='/tmp/beam/output', help='Output file to write results to.')
+    parser.add_argument('--input', dest='input', help='Input file to process.')
+    parser.add_argument('--output-file', dest='output_file', help='Output file to write results to.')
+    parser.add_argument('--output-bq', dest='output_bq', help='Output BigQuery Table to write results to.')
     known_args, pipeline_args = parser.parse_known_args(argv)
     pipeline_args.extend([
       '--runner=DirectRunner',
@@ -33,7 +36,8 @@ def run(argv=None, save_main_session=True):
             'place_id': d.get('geo', {}).get('place_id', ''),
             'lang': d.get('lang', ''),
             'text': d['text'],
-            'keywords': re.findall(r'[@#\w\']{4,}', d['text'], re.UNICODE)
+            'keywords': re.findall(r'[@#\w\']{6,}', d['text'], re.UNICODE),
+            'hashtags': hashtags
         }
 
     # We use the save_main_session option because one or more DoFn's in this
@@ -45,10 +49,16 @@ def run(argv=None, save_main_session=True):
             | 'Read' >> ReadFromText(known_args.input)
             | 'FromJSON' >> beam.Map(json.loads)
             | 'Transform' >> beam.Map(transform_tweet_to_bq)
-#            | 'ToJSON' >> beam.Map(json.dumps)
-#            | 'Write' >> WriteToText(known_args.output)
-            | 'LoadBigQuery' >> WriteToBigQuery('twitter.tweets', method=WriteToBigQuery.Method.FILE_LOADS)
         )
+
+        if known_args.output_file:
+            unused = (output
+                | 'ToJSON' >> beam.Map(json.dumps)
+                | 'Write' >> WriteToText(known_args.output_file)
+            )
+
+        if known_args.output_bq:
+            unused = (output | 'LoadBigQuery' >> WriteToBigQuery(known_args.output_bq, method=WriteToBigQuery.Method.FILE_LOADS))
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.INFO)
