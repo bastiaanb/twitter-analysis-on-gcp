@@ -8,6 +8,7 @@ data "archive_file" "jsonfeed-zip" {
 # create the storage bucket
 resource "google_storage_bucket" "deployment" {
   name   = "global-datacenter-deployment${var.suffix}"
+  location = "EU"
 }
 
 # place the zip-ed code in the bucket

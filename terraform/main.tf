@@ -142,3 +142,8 @@ EOF
 
   depends_on = [google_project_iam_member.permissions]
 }
+
+resource "google_storage_bucket" "twitter" {
+  name   = "global-datacenter-twitter${var.suffix}"
+  location = "EU"
+}
