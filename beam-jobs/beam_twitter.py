@@ -18,17 +18,17 @@ def run(argv=None, save_main_session=True):
     parser.add_argument('--output-file', dest='output_file', help='Output file to write results to.')
     parser.add_argument('--output-bq', dest='output_bq', help='Output BigQuery Table to write results to.')
     known_args, pipeline_args = parser.parse_known_args(argv)
-    pipeline_args.extend([
-      '--runner=DirectRunner',
-      '--project=global-datacenter',
-#      '--staging_location=/tmp/beam/staging',
-#      '--temp_location=/tmp/beam/tmp',
-      '--job_name=parse-twitter-job',
-    ])
+#     pipeline_args.extend([
+#       '--runner=DirectRunner',
+# #      '--temp_location=/tmp/beam/tmp',
+#       '--job_name=parse-twitter-job',
+#     ])
 
     def transform_tweet_to_bq(data):
         d = data['data']
         hashtags = [ h['tag'] for h in d.get('entities', {}).get('hashtags', {}) ]
+        places = data.get('includes', {}).get('places', {})
+        place = places[0] if len(places) > 0 else {}
         return {
             'id': d['id'],
             'author_id': d['author_id'],
@@ -37,7 +37,10 @@ def run(argv=None, save_main_session=True):
             'lang': d.get('lang', ''),
             'text': d['text'],
             'keywords': re.findall(r'[@#\w\']{6,}', d['text'], re.UNICODE),
-            'hashtags': hashtags
+            'place_name': place.get('full_name', ''),
+            'place_country': place.get('country_code', ''),
+            'hashtags': hashtags,
+
         }
 
     # We use the save_main_session option because one or more DoFn's in this
