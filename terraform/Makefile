@@ -4,12 +4,12 @@ JSONFEED_URL=$(shell terraform output jsonfeed_url)
 
 init:
 	terraform init
-	
+
 workspace:
 	terraform workspace new $(STACK)
 
 select-workspace:
-	terraform workspace select $(STACK)
+	terraform workspace select $(STACK) || terraform workspace new $(STACK)
 
 plan: select-workspace
 	terraform plan -var-file=stacks/$(STACK).tfvars
