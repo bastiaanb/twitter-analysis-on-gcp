@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import requests
@@ -82,10 +82,12 @@ def setup_rules(auth):
   current_rules = get_all_rules(auth)
   delete_rules(current_rules, auth)
   add_rules([
-  #  { 'value': 'place_country:NL', 'tag': 'NL' },
+    { 'value': 'place_country:NL', 'tag': 'NL' },
     { 'value': 'place_country:US', 'tag': 'US' },
   ], auth)
 
 auth = BearerTokenAuth(os.environ.get("BEARER_TOKEN"))
 setup_rules(auth)
-stream_connect(auth)
+while True:
+    stream_connect(auth)
+    time.sleep(2)
